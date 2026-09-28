@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>FestPass | College Fest Ticketing</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f5f7fb;
+            color: #172033;
+        }
+
+        button,
+        input,
+        select {
+            font-family: inherit;
+        }
+
+        button {
+            cursor: pointer;
+            border: none;
+        }
+
+        /* ================= SIDEBAR ================= */
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 250px;
+            height: 100vh;
+            background: #111124;
+            color: white;
+            padding: 25px 16px;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px 30px;
+        }
+
+        .logo-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 13px;
+            background: linear-gradient(135deg, #6945e8, #8a5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 23px;
+        }
+
+        .logo h2 {
+            font-size: 22px;
+        }
+
+        .logo span {
+            color: #8c62f5;
+        }
+
+        .nav {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .nav button {
+            width: 100%;
+            padding: 15px;
+            text-align: left;
+            background: transparent;
+            color: #a9aabd;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: 0.2s;
+        }
+
+        .nav button:hover,
+        .nav button.active {
+            background: #282541;
+            color: white;
+        }
+
+        /* ================= MAIN ================= */
+
+        .main {
+            margin-left: 250px;
+            min-height: 100vh;
+        }
+
+        .topbar {
+            height: 76px;
+            background: white;
+            border-bottom: 1px solid #e8eaf0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+        }
+
+        .page-title h1 {
+            font-size: 25px;
+            margin-bottom: 5px;
+        }
+
+        .page-title p {
+            color: #7b8293;
+            font-size: 14px;
+        }
+
+        .admin {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .admin-avatar {
+            width: 44px;
+            height: 44px;
+            background: #eee9ff;
+            color: #6041db;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .admin-name {
+            font-weight: bold;
+        }
+
+        .admin-role {
+            font-size: 12px;
+            color: #8a8f9c;
+            margin-top: 3px;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        /* ================= HERO ================= */
+
+        .hero {
+            background: linear-gradient(120deg, #4f35cf, #68228d);
+            color: white;
+            border-radius: 20px;
+            padding: 32px;
+            min-height: 145px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 25px;
+        }
+
+        .hero h2 {
+            font-size: 29px;
+            margin-bottom: 10px;
+        }
+
+        .hero p {
+            color: #dcd5ff;
+        }
+
+        .hero-icon {
+            font-size: 65px;
+        }
+
+        /* ================= STATS ================= */
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 17px;
+            padding: 22px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 5px 20px rgba(30, 30, 70, 0.04);
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 14px;
+            background: #f0edff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 23px;
+        }
+
+        .stat-number {
+            font-size: 25px;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: #858b99;
+            margin-top: 4px;
+        }
+
+        /* ================= QUICK ACTION ================= */
+
+        .section-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 20px rgba(30, 30, 70, 0.04);
+        }
+
+        .section-title {
+            font-size: 22px;
+            margin-bottom: 20px;
+        }
+
+        .quick-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+        }
+
+        .btn {
+            padding: 14px 22px;
+            border-radius: 11px;
+            color: white;
+            font-size: 15px;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            opacity: 0.92;
+        }
+
+        .btn-purple {
+            background: #6242df;
+        }
+
+        .btn-green {
+            background: #10a981;
+        }
+
+        .btn-orange {
+            background: #f59b0b;
+        }
+
+        .btn-red {
+            background: #ef4444;
+        }
+
+        .btn-blue {
+            background: #2563eb;
+        }
+
+        .btn-gray {
+            background: #eef0f5;
+            color: #343a49;
+        }
+
+        /* ================= TABLE ================= */
+
+        .table-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(30, 30, 70, 0.04);
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 15px;
+        }
+
+        .table-header h2 {
+            font-size: 22px;
+        }
+
+        .search {
+            width: 300px;
+            padding: 13px 16px;
+            border: 1px solid #dfe2e8;
+            border-radius: 10px;
+            outline: none;
+        }
+
+        .search:focus {
+            border-color: #6845e5;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #f7f8fb;
+            padding: 15px;
+            text-align: left;
+            font-size: 13px;
+            color: #4d5361;
+        }
+
+        td {
+            padding: 16px 15px;
+            border-bottom: 1px solid #edf0f4;
+            font-size: 14px;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 45px;
+            color: #8c92a0;
+        }
+
+        /* ================= BADGE ================= */
+
+        .badge {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .badge-green {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .badge-red {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .badge-purple {
+            background: #ede9fe;
+            color: #6d28d9;
+        }
+
+        /* ================= MODAL ================= */
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(8, 8, 25, 0.62);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            width: 100%;
+            max-width: 650px;
+            border-radius: 20px;
+            padding: 30px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 25px;
+        }
+
+        .modal-header h2 {
+            font-size: 24px;
+        }
+
+        .close {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #f1f2f6;
+            font-size: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 13px 14px;
+            border: 1px solid #d9dce4;
+            border-radius: 10px;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .form-control:focus {
+            border-color: #6544df;
+            box-shadow: 0 0 0 3px #eeeaff;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        /* ================= TOAST ================= */
+
+        .toast {
+            position: fixed;
+            right: 25px;
+            bottom: 25px;
+            padding: 15px 20px;
+            border-radius: 12px;
+            color: white;
+            font-weight: bold;
+            z-index: 2000;
+            display: none;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0,0,0,.2);
+        }
+
+        .toast.show {
+            display: block;
+        }
+
+        .toast.success {
+            background: #10a981;
+        }
+
+        .toast.error {
+            background: #ef4444;
+        }
+
+        /* ================= QR ================= */
+
+        .qr-container {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .qr-container img {
+            width: 220px;
+            height: 220px;
+            margin: 20px auto;
+            border: 10px solid white;
+            box-shadow: 0 5px 25px rgba(0,0,0,.1);
+        }
+
+        .ticket-number {
+            font-size: 20px;
+            font-weight: bold;
+            color: #6242df;
+        }
+
+        /* ================= RESPONSIVE ================= */
+
+        @media(max-width: 1000px) {
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .sidebar {
+                width: 210px;
+            }
+
+            .main {
+                margin-left: 210px;
+            }
+        }
+
+        @media(max-width: 750px) {
+
+            .sidebar {
+                position: relative;
+                width: 100%;
+                height: auto;
+            }
+
+            .main {
+                margin-left: 0;
+            }
+
+            .nav {
+                flex-direction: row;
+                overflow-x: auto;
+            }
+
+            .nav button {
+                min-width: 120px;
+            }
+
+            .topbar {
+                padding: 15px;
+            }
+
+            .content {
+                padding: 15px;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .table-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search {
+                width: 100%;
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+
+<!-- ================= SIDEBAR ================= -->
+
+<aside class="sidebar">
+
+    <div class="logo">
+        <div class="logo-icon">🎟️</div>
+        <h2>Fest<span>Pass</span></h2>
+    </div>
+
+    <div class="nav">
+
+        <button class="nav-btn active"
+                data-page="dashboard"
+                onclick="showPage('dashboard')">
+            📊 Dashboard
+        </button>
+
+        <button class="nav-btn"
+                data-page="events"
+                onclick="showPage('events')">
+            🎪 Events
+        </button>
+
+        <button class="nav-btn"
+                data-page="attendees"
+                onclick="showPage('attendees')">
+            👥 Attendees
+        </button>
+
+        <button class="nav-btn"
+                data-page="bookings"
+                onclick="showPage('bookings')">
+            📋 Bookings
+        </button>
+
+        <button class="nav-btn"
+                data-page="tickets"
+                onclick="showPage('tickets')">
+            🎟️ Tickets
+        </button>
+
+    </div>
+
+</aside>
+
+
+<!-- ================= MAIN ================= -->
+
+<main class="main">
+
+    <header class="topbar">
+
+        <div class="page-title">
+            <h1 id="pageTitle">Dashboard</h1>
+            <p id="pageSubtitle">
+                Manage your college fest
+            </p>
+        </div>
+
+        <div class="admin">
+
+            <div class="admin-avatar">
+                FP
+            </div>
+
+            <div>
+                <div class="admin-name">
+                    Fest Admin
+                </div>
+
+                <div class="admin-role">
+                    Administrator
+                </div>
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <div class="content">
+
+        <!-- ================= DASHBOARD ================= -->
+
+        <section id="dashboardPage" class="page">
+
+            <div class="hero">
+
+                <div>
+                    <h2>
+                        Welcome to FestPass 👋
+                    </h2>
+
+                    <p>
+                        Manage events, attendees, bookings and tickets from one place.
+                    </p>
+                </div>
+
+                <div class="hero-icon">
+                    🎉
+                </div>
+
+            </div>
+
+
+            <div class="stats">
+
+                <div class="stat-card">
+
+                    <div class="stat-icon">
+                        🎪
+                    </div>
+
+                    <div>
+                        <div id="totalEvents"
+                             class="stat-number">
+                            0
+                        </div>
+
+                        <div class="stat-label">
+                            Total Events
+                        </div>
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon">
+                        👥
+                    </div>
+
+                    <div>
+                        <div id="totalAttendees"
+                             class="stat-number">
+                            0
+                        </div>
+
+                        <div class="stat-label">
+                            Total Attendees
+                        </div>
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon">
+                        📋
+                    </div>
+
+                    <div>
+                        <div id="totalBookings"
+                             class="stat-number">
+                            0
+                        </div>
+
+                        <div class="stat-label">
+                            Total Bookings
+                        </div>
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon">
+                        🎟️
+                    </div>
+
+                    <div>
+                        <div id="totalTickets"
+                             class="stat-number">
+                            0
+                        </div>
+
+                        <div class="stat-label">
+                            Total Tickets
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- QUICK ACTIONS -->
+
+            <div class="section-card">
+
+                <h2 class="section-title">
+                    Quick Actions
+                </h2>
+
+                <div class="quick-actions">
+
+                    <button class="btn btn-purple"
+                            onclick="openEventModal()">
+                        + Create Event
+                    </button>
+
+                    <button class="btn btn-green"
+                            onclick="openAttendeeModal()">
+                        + Add Attendee
+                    </button>
+
+                    <button class="btn btn-orange"
+                            onclick="openBookingModal()">
+                        + New Booking
+                    </button>
+
+                    <button class="btn btn-purple"
+                            onclick="showPage('tickets')">
+                        🎟 View Tickets
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div class="table-card">
+
+                <div class="table-header">
+
+                    <div>
+                        <h2>
+                            Recent Events
+                        </h2>
+                    </div>
+
+                    <button class="btn btn-purple"
+                            onclick="showPage('events')">
+                        View All
+                    </button>
+
+                </div>
+
+                <div class="table-wrap">
+
+                    <table>
+
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Event</th>
+                            <th>Capacity</th>
+                            <th>Price</th>
+                            <th>Date</th>
+                        </tr>
+                        </thead>
+
+                        <tbody id="dashboardEvents"></tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= EVENTS ================= -->
+
+        <section id="eventsPage"
+                 class="page"
+                 style="display:none">
+
+            <div class="table-card">
+
+                <div class="table-header">
+
+                    <div>
+                        <h2>Fest Events</h2>
+                        <p style="color:#7d8492;margin-top:5px">
+                            Create and manage your college fest events
+                        </p>
+                    </div>
+
+                    <div style="display:flex;gap:10px">
+
+                        <input
+                                id="eventSearch"
+                                class="search"
+                                placeholder="🔍 Search events..."
+                                oninput="filterEvents()">
+
+                        <button class="btn btn-purple"
+                                onclick="openEventModal()">
+                            + Add Event
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <div class="table-wrap">
+
+                    <table>
+
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Event</th>
+                            <th>Capacity</th>
+                            <th>Price</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+
+                        <tbody id="eventsTable"></tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= ATTENDEES ================= -->
+
+        <section id="attendeesPage"
+                 class="page"
+                 style="display:none">
+
+            <div class="table-card">
+
+                <div class="table-header">
+
+                    <div>
+                        <h2>Attendees</h2>
+                        <p style="color:#7d8492;margin-top:5px">
+                            Manage fest attendees
+                        </p>
+                    </div>
+
+                    <div style="display:flex;gap:10px">
+
+                        <input
+                                id="attendeeSearch"
+                                class="search"
+                                placeholder="🔍 Search attendees..."
+                                oninput="filterAttendees()">
+
+                        <button class="btn btn-green"
+                                onclick="openAttendeeModal()">
+                            + Add Attendee
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <div class="table-wrap">
+
+                    <table>
+
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                        </tr>
+                        </thead>
+
+                        <tbody id="attendeesTable"></tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= BOOKINGS ================= -->
+
+        <section id="bookingsPage"
+                 class="page"
+                 style="display:none">
+
+            <div class="table-card">
+
+                <div class="table-header">
+
+                    <div>
+                        <h2>Bookings</h2>
+                        <p style="color:#7d8492;margin-top:5px">
+                            Manage ticket bookings
+                        </p>
+                    </div>
+
+                    <button class="btn btn-orange"
+                            onclick="openBookingModal()">
+                        + New Booking
+                    </button>
+
+                </div>
+
+                <div class="table-wrap">
+
+                    <table>
+
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Attendee</th>
+                            <th>Event</th>
+                            <th>Tickets</th>
+                            <th>Status</th>
+                        </tr>
+                        </thead>
+
+                        <tbody id="bookingsTable"></tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= TICKETS ================= -->
+
+        <section id="ticketsPage"
+                 class="page"
+                 style="display:none">
+
+            <div class="table-card">
+
+                <div class="table-header">
+
+                    <div>
+                        <h2>Tickets</h2>
+                        <p style="color:#7d8492;margin-top:5px">
+                            Tickets and QR check-in
+                        </p>
+                    </div>
+
+                    <button class="btn btn-purple"
+                            onclick="loadTickets()">
+                        ↻ Refresh
+                    </button>
+
+                </div>
+
+                <div class="table-wrap">
+
+                    <table>
+
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Ticket Number</th>
+                            <th>Type</th>
+                            <th>Price</th>
+                            <th>QR</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                        </thead>
+
+                        <tbody id="ticketsTable"></tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </div>
+
+</main>
+
+
+<!-- ================= EVENT MODAL ================= -->
+
+<div id="eventModal"
+     class="modal-overlay">
+
+    <div class="modal">
+
+        <div class="modal-header">
+
+            <h2>
+                Create Event
+            </h2>
+
+            <button class="close"
+                    onclick="closeEventModal()">
+                ×
+            </button>
+
+        </div>
+
+
+        <form onsubmit="saveEvent(event)">
+
+            <div class="form-group">
+
+                <label>
+                    Event Name
+                </label>
+
+                <input
+                        id="eventName"
+                        class="form-control"
+                        type="text"
+                        placeholder="Example: Dhrona"
+                        required>
+
+            </div>
+
+
+            <div class="form-row">
+
+                <div class="form-group">
+
+                    <label>
+                        Capacity
+                    </label>
+
+                    <input
+                            id="capacity"
+                            class="form-control"
+                            type="number"
+                            min="1"
+                            placeholder="1000"
+                            required>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>
+                        Ticket Price
+                    </label>
+
+                    <input
+                            id="ticketPrice"
+                            class="form-control"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            placeholder="999"
+                            required>
+
+                </div>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Event Date & Time
+                </label>
+
+                <input
+                        id="eventDate"
+                        class="form-control"
+                        type="datetime-local"
+                        required>
+
+            </div>
+
+
+            <div class="modal-actions">
+
+                <button type="button"
+                        class="btn btn-gray"
+                        onclick="closeEventModal()">
+                    Cancel
+                </button>
+
+                <button type="submit"
+                        class="btn btn-purple">
+                    Save Event
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- ================= ATTENDEE MODAL ================= -->
+
+<div id="attendeeModal"
+     class="modal-overlay">
+
+    <div class="modal">
+
+        <div class="modal-header">
+
+            <h2>
+                Add Attendee
+            </h2>
+
+            <button class="close"
+                    onclick="closeAttendeeModal()">
+                ×
+            </button>
+
+        </div>
+
+
+        <form onsubmit="saveAttendee(event)">
+
+            <div class="form-group">
+
+                <label>
+                    Name
+                </label>
+
+                <input
+                        id="attendeeName"
+                        class="form-control"
+                        type="text"
+                        placeholder="Enter attendee name"
+                        required>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Email
+                </label>
+
+                <input
+                        id="attendeeEmail"
+                        class="form-control"
+                        type="email"
+                        placeholder="example@gmail.com"
+                        required>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Phone
+                </label>
+
+                <input
+                        id="attendeePhone"
+                        class="form-control"
+                        type="text"
+                        placeholder="9876543210"
+                        required>
+
+            </div>
+
+
+            <div class="modal-actions">
+
+                <button type="button"
+                        class="btn btn-gray"
+                        onclick="closeAttendeeModal()">
+                    Cancel
+                </button>
+
+                <button type="submit"
+                        class="btn btn-green">
+                    Save Attendee
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- ================= BOOKING MODAL ================= -->
+
+<div id="bookingModal"
+     class="modal-overlay">
+
+    <div class="modal">
+
+        <div class="modal-header">
+
+            <h2>
+                New Booking
+            </h2>
+
+            <button class="close"
+                    onclick="closeBookingModal()">
+                ×
+            </button>
+
+        </div>
+
+
+        <form onsubmit="saveBooking(event)">
+
+            <div class="form-group">
+
+                <label>
+                    Attendee ID
+                </label>
+
+                <input
+                        id="bookingAttendeeId"
+                        class="form-control"
+                        type="number"
+                        min="1"
+                        placeholder="Example: 1"
+                        required>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Event ID
+                </label>
+
+                <input
+                        id="bookingEventId"
+                        class="form-control"
+                        type="number"
+                        min="1"
+                        placeholder="Example: 1"
+                        required>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Number of Tickets
+                </label>
+
+                <input
+                        id="numberOfTickets"
+                        class="form-control"
+                        type="number"
+                        min="1"
+                        value="1"
+                        required>
+
+            </div>
+
+
+            <div class="modal-actions">
+
+                <button type="button"
+                        class="btn btn-gray"
+                        onclick="closeBookingModal()">
+                    Cancel
+                </button>
+
+                <button type="submit"
+                        class="btn btn-orange">
+                    Create Booking
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- ================= QR MODAL ================= -->
+
+<div id="qrModal"
+     class="modal-overlay">
+
+    <div class="modal">
+
+        <div class="modal-header">
+
+            <h2>
+                🎟 Ticket QR
+            </h2>
+
+            <button class="close"
+                    onclick="closeQRModal()">
+                ×
+            </button>
+
+        </div>
+
+        <div class="qr-container">
+
+            <div class="ticket-number"
+                 id="qrTicketNumber">
+            </div>
+
+            <img id="qrImage"
+                 src=""
+                 alt="Ticket QR Code">
+
+            <p>
+                Scan this QR code for check-in
+            </p>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ================= TOAST ================= -->
+
+<div id="toast"
+     class="toast">
+</div>
+
+
+<script src="/js/javascript.js"></script>
+
+</body>
+</html>
