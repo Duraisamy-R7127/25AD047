@@ -1,27 +1,12 @@
 package com.FestPass.Dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.PositiveOrZero;
-
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public class FestEventRequest {
 
-    @NotBlank(message = "Event name is required")
     private String name;
-
-    @NotNull(message = "Capacity is required")
-    @Positive(message = "Capacity must be greater than 0")
     private Integer capacity;
-
-    @NotNull(message = "Ticket price is required")
-    @PositiveOrZero(message = "Ticket price cannot be negative")
-    private BigDecimal ticketPrice;
-
-    @NotNull(message = "Event date is required")
+    private Double ticketPrice;
     private LocalDateTime eventDate;
 
     public FestEventRequest() {
@@ -43,11 +28,11 @@ public class FestEventRequest {
         this.capacity = capacity;
     }
 
-    public BigDecimal getTicketPrice() {
+    public Double getTicketPrice() {
         return ticketPrice;
     }
 
-    public void setTicketPrice(BigDecimal ticketPrice) {
+    public void setTicketPrice(Double ticketPrice) {
         this.ticketPrice = ticketPrice;
     }
 

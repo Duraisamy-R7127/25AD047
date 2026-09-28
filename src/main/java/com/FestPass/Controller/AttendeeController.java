@@ -3,70 +3,72 @@ package com.FestPass.Controller;
 import com.FestPass.Dto.AttendeeRequest;
 import com.FestPass.Models.Attendee;
 import com.FestPass.Service.AttendeeService;
-import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/attendees")
+@RequestMapping("/attendees")
+@CrossOrigin(origins = "*")
 public class AttendeeController {
 
     private final AttendeeService attendeeService;
 
-    public AttendeeController(AttendeeService attendeeService) {
-        this.attendeeService = attendeeService;
-    }
+    public AttendeeController(
+            AttendeeService attendeeService) {
 
-    @PostMapping
-    public ResponseEntity<Attendee> createAttendee(
-            @Valid @RequestBody AttendeeRequest request) {
-
-        Attendee attendee = attendeeService.createAttendee(request);
-
-        return new ResponseEntity<>(
-                attendee,
-                HttpStatus.CREATED
-        );
+        this.attendeeService =
+                attendeeService;
     }
 
     @GetMapping
-    public ResponseEntity<List<Attendee>> getAllAttendees() {
+    public ResponseEntity<List<Attendee>>
+    getAllAttendees() {
 
         return ResponseEntity.ok(
-                attendeeService.getAllAttendees()
-        );
+                attendeeService.getAllAttendees());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Attendee> getAttendeeById(
+    public ResponseEntity<Attendee>
+    getAttendeeById(
             @PathVariable Long id) {
 
         return ResponseEntity.ok(
-                attendeeService.getAttendeeById(id)
-        );
+                attendeeService.getAttendeeById(id));
+    }
+
+    @PostMapping
+    public ResponseEntity<Attendee>
+    createAttendee(
+            @RequestBody AttendeeRequest request) {
+
+        return ResponseEntity.ok(
+                attendeeService.createAttendee(
+                        request));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Attendee> updateAttendee(
+    public ResponseEntity<Attendee>
+    updateAttendee(
             @PathVariable Long id,
-            @Valid @RequestBody AttendeeRequest request) {
+            @RequestBody AttendeeRequest request) {
 
         return ResponseEntity.ok(
-                attendeeService.updateAttendee(id, request)
-        );
+                attendeeService.updateAttendee(
+                        id,
+                        request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteAttendee(
+    public ResponseEntity<String>
+    deleteAttendee(
             @PathVariable Long id) {
 
         attendeeService.deleteAttendee(id);
 
         return ResponseEntity.ok(
-                "Attendee deleted successfully"
-        );
+                "Attendee deleted successfully");
     }
 }

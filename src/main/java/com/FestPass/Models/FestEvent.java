@@ -1,38 +1,45 @@
 package com.FestPass.Models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-
-import java.math.BigDecimal;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "fest_event")
 public class FestEvent {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String name;
 
+    @Column(nullable = false)
+    private String venue;
+
+    @Column(nullable = false)
     private Integer capacity;
 
-    private BigDecimal ticketPrice;
+    @Column(nullable = false)
+    private Double ticketPrice;
 
+    @Column(nullable = false)
     private LocalDateTime eventDate;
 
     public FestEvent() {
     }
 
+    // =========================
+    // ID
+    // =========================
+
     public Long getId() {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    // =========================
+    // NAME
+    // =========================
 
     public String getName() {
         return name;
@@ -42,6 +49,22 @@ public class FestEvent {
         this.name = name;
     }
 
+    // =========================
+    // VENUE
+    // =========================
+
+    public String getVenue() {
+        return venue;
+    }
+
+    public void setVenue(String venue) {
+        this.venue = venue;
+    }
+
+    // =========================
+    // CAPACITY
+    // =========================
+
     public Integer getCapacity() {
         return capacity;
     }
@@ -50,13 +73,21 @@ public class FestEvent {
         this.capacity = capacity;
     }
 
-    public BigDecimal getTicketPrice() {
+    // =========================
+    // TICKET PRICE
+    // =========================
+
+    public Double getTicketPrice() {
         return ticketPrice;
     }
 
-    public void setTicketPrice(BigDecimal ticketPrice) {
+    public void setTicketPrice(Double ticketPrice) {
         this.ticketPrice = ticketPrice;
     }
+
+    // =========================
+    // EVENT DATE
+    // =========================
 
     public LocalDateTime getEventDate() {
         return eventDate;

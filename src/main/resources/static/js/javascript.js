@@ -1,18 +1,13 @@
-/* =========================================================
-   FESTPASS FRONTEND
-   ========================================================= */
+// ======================================================
+// FESTPASS - COMPLETE JAVASCRIPT
+// ======================================================
 
-const API = {
-    events: "/api/events",
-    attendees: "/api/attendees",
-    bookings: "/api/bookings",
-    tickets: "/api/tickets"
-};
+const API_BASE_URL = "http://localhost:8080";
 
 
-/* =========================================================
-   GLOBAL DATA
-   ========================================================= */
+// ======================================================
+// GLOBAL DATA
+// ======================================================
 
 let events = [];
 let attendees = [];
@@ -20,9 +15,109 @@ let bookings = [];
 let tickets = [];
 
 
-/* =========================================================
-   PAGE NAVIGATION
-   ========================================================= */
+// ======================================================
+// PAGE TITLES
+// ======================================================
+
+const pageInfo = {
+
+    dashboard: {
+        title: "Dashboard",
+        subtitle: "Manage your college fest"
+    },
+
+    events: {
+        title: "Events",
+        subtitle: "Manage your college fest events"
+    },
+
+    attendees: {
+        title: "Attendees",
+        subtitle: "Manage fest attendees"
+    },
+
+    bookings: {
+        title: "Bookings",
+        subtitle: "Manage ticket bookings"
+    },
+
+    tickets: {
+        title: "Tickets",
+        subtitle: "Tickets and QR check-in"
+    }
+
+};
+
+
+// ======================================================
+// PAGE LOAD
+// ======================================================
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    console.log("FestPass JavaScript loaded");
+
+    loadDashboard();
+
+});
+
+
+// ======================================================
+// API HELPER
+// ======================================================
+
+async function apiRequest(url, options = {}) {
+
+    try {
+
+        const response = await fetch(
+            API_BASE_URL + url,
+            {
+                ...options,
+                headers: {
+                    "Content-Type": "application/json",
+                    ...(options.headers || {})
+                }
+            }
+        );
+
+        if (!response.ok) {
+
+            let message = "Request failed: " + response.status;
+
+            try {
+
+                const errorData = await response.json();
+
+                if (errorData.message) {
+                    message = errorData.message;
+                }
+
+            } catch (e) {
+                // Ignore JSON parsing error
+            }
+
+            throw new Error(message);
+        }
+
+        if (response.status === 204) {
+            return null;
+        }
+
+        return await response.json();
+
+    } catch (error) {
+
+        console.error("API Error:", error);
+
+        throw error;
+    }
+}
+
+
+// ======================================================
+// SHOW PAGE
+// ======================================================
 
 function showPage(page) {
 
@@ -34,7 +129,7 @@ function showPage(page) {
         "tickets"
     ];
 
-    pages.forEach(name => {
+    pages.forEach(function (name) {
 
         const element =
             document.getElementById(name + "Page");
@@ -48,7 +143,7 @@ function showPage(page) {
 
 
     document.querySelectorAll(".nav-btn")
-        .forEach(button => {
+        .forEach(function (button) {
 
             button.classList.remove("active");
 
@@ -59,46 +154,20 @@ function showPage(page) {
         });
 
 
-    const titles = {
+    const info = pageInfo[page];
 
-        dashboard: [
-            "Dashboard",
-            "Manage your college fest"
-        ],
-
-        events: [
-            "Events",
-            "Create and manage fest events"
-        ],
-
-        attendees: [
-            "Attendees",
-            "Manage fest attendees"
-        ],
-
-        bookings: [
-            "Bookings",
-            "Manage ticket bookings"
-        ],
-
-        tickets: [
-            "Tickets",
-            "Tickets and QR check-in"
-        ]
-
-    };
-
-
-    if (titles[page]) {
+    if (info) {
 
         document.getElementById("pageTitle")
-            .textContent = titles[page][0];
+            .textContent = info.title;
 
         document.getElementById("pageSubtitle")
-            .textContent = titles[page][1];
+            .textContent = info.subtitle;
 
     }
 
+
+    // Load required data
 
     if (page === "dashboard") {
         loadDashboard();
@@ -123,268 +192,28 @@ function showPage(page) {
 }
 
 
-/* =========================================================
-   FETCH HELPER
-   ========================================================= */
+// ======================================================
+// DASHBOARD
+// ======================================================
 
-async function apiFetch(url, options = {}) {
+async function loadDashboard() {
 
     try {
 
-        const response = await fetch(url, {
+        await Promise.all([
+            loadEvents(),
+            loadAttendees(),
+            loadBookings(),
+            loadTickets()
+        ]);
 
-            ...options,
-
-            headers: {
-                "Content-Type": "application/json",
-                ...(options.headers || {})
-            }
-
-        });
-
-
-        const text = await response.text();
-
-        let data = null;
-
-        if (text) {
-
-            try {
-                data = JSON.parse(text);
-            } catch {
-
-                data = text;
-
-            }
-
-        }
-
-
-        if (!response.ok) {
-
-            let message = "Server error: " + response.status;
-
-            if (data) {
-
-                if (typeof data === "string") {
-                    message = data;
-                }
-
-                else if (data.message) {
-                    message = data.message;
-                }
-
-                else if (data.error) {
-                    message = data.error;
-                }
-
-                else if (data.errors) {
-                    message = JSON.stringify(data.errors);
-                }
-
-            }
-
-            throw new Error(message);
-        }
-
-
-        return data;
+        updateDashboardStats();
 
     } catch (error) {
 
-        console.error("API ERROR:", error);
-
-        throw error;
-
-    }
-
-}
-
-
-/* =========================================================
-   TOAST
-   ========================================================= */
-
-function showToast(message, type = "success") {
-
-    const toast =
-        document.getElementById("toast");
-
-    toast.textContent = message;
-
-    toast.className =
-        "toast show " + type;
-
-
-    setTimeout(() => {
-
-        toast.classList.remove("show");
-
-    }, 3500);
-
-}
-
-
-/* =========================================================
-   EVENT MODAL
-   ========================================================= */
-
-function openEventModal() {
-
-    document
-        .getElementById("eventModal")
-        .classList.add("show");
-
-}
-
-
-function closeEventModal() {
-
-    document
-        .getElementById("eventModal")
-        .classList.remove("show");
-
-}
-
-
-/* =========================================================
-   CREATE EVENT
-   ========================================================= */
-
-async function saveEvent(event) {
-
-    event.preventDefault();
-
-
-    const name =
-        document.getElementById("eventName")
-            .value.trim();
-
-    const capacity =
-        Number(
-            document.getElementById("capacity")
-                .value
-        );
-
-    const ticketPrice =
-        Number(
-            document.getElementById("ticketPrice")
-                .value
-        );
-
-    const eventDate =
-        document.getElementById("eventDate")
-            .value;
-
-
-    if (!name) {
-
-        showToast(
-            "Event name is required",
-            "error"
-        );
-
-        return;
-    }
-
-
-    if (!capacity || capacity < 1) {
-
-        showToast(
-            "Capacity must be greater than 0",
-            "error"
-        );
-
-        return;
-    }
-
-
-    if (isNaN(ticketPrice) || ticketPrice < 0) {
-
-        showToast(
-            "Enter valid ticket price",
-            "error"
-        );
-
-        return;
-    }
-
-
-    if (!eventDate) {
-
-        showToast(
-            "Event date is required",
-            "error"
-        );
-
-        return;
-    }
-
-
-    /*
-       IMPORTANT:
-
-       Backend expects:
-
-       name
-       capacity
-       ticketPrice
-       eventDate
-    */
-
-    const data = {
-
-        name: name,
-
-        capacity: capacity,
-
-        ticketPrice: ticketPrice,
-
-        eventDate: eventDate
-
-    };
-
-
-    console.log(
-        "CREATE EVENT REQUEST:",
-        data
-    );
-
-
-    try {
-
-        await apiFetch(API.events, {
-
-            method: "POST",
-
-            body: JSON.stringify(data)
-
-        });
-
-
-        showToast(
-            "Event created successfully!"
-        );
-
-
-        closeEventModal();
-
-
-        document
-            .querySelector("#eventModal form")
-            .reset();
-
-
-        await loadEvents();
-
-        await updateDashboardStats();
-
-
-    } catch (error) {
-
-        showToast(
-            error.message,
-            "error"
+        console.error(
+            "Dashboard loading error:",
+            error
         );
 
     }
@@ -392,57 +221,123 @@ async function saveEvent(event) {
 }
 
 
-/* =========================================================
-   LOAD EVENTS
-   ========================================================= */
+// ======================================================
+// UPDATE DASHBOARD STATS
+// ======================================================
+
+function updateDashboardStats() {
+
+    const totalEvents =
+        document.getElementById("totalEvents");
+
+    const totalAttendees =
+        document.getElementById("totalAttendees");
+
+    const totalBookings =
+        document.getElementById("totalBookings");
+
+    const totalTickets =
+        document.getElementById("totalTickets");
+
+
+    if (totalEvents) {
+        totalEvents.textContent =
+            events.length;
+    }
+
+    if (totalAttendees) {
+        totalAttendees.textContent =
+            attendees.length;
+    }
+
+    if (totalBookings) {
+        totalBookings.textContent =
+            bookings.length;
+    }
+
+    if (totalTickets) {
+        totalTickets.textContent =
+            tickets.length;
+    }
+
+
+    renderDashboardEvents();
+
+}
+
+
+// ======================================================
+// EVENTS
+// ======================================================
 
 async function loadEvents() {
+
+    const tbody =
+        document.getElementById("eventsTable");
 
     try {
 
         const data =
-            await apiFetch(API.events);
-
+            await apiRequest("/events");
 
         events =
             Array.isArray(data)
                 ? data
                 : [];
 
+        renderEvents(events);
 
-        renderEvents();
+        renderDashboardEvents();
 
         updateDashboardStats();
 
+        return events;
+
     } catch (error) {
 
-        console.error(error);
-
-        renderEventsError(
-            "Unable to load events"
+        console.error(
+            "Unable to load events:",
+            error
         );
 
+        if (tbody) {
+
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6"
+                        class="empty">
+                        Unable to load events
+                    </td>
+                </tr>
+            `;
+
+        }
+
+        return [];
     }
 
 }
 
 
-/* =========================================================
-   RENDER EVENTS
-   ========================================================= */
+// ======================================================
+// RENDER EVENTS
+// ======================================================
 
-function renderEvents(list = events) {
+function renderEvents(data) {
 
-    const table =
+    const tbody =
         document.getElementById("eventsTable");
 
+    if (!tbody) {
+        return;
+    }
 
-    if (!table) return;
+    tbody.innerHTML = "";
 
 
-    if (!list.length) {
+    if (!data || data.length === 0) {
 
-        table.innerHTML = `
+        tbody.innerHTML = `
             <tr>
                 <td colspan="6"
                     class="empty">
@@ -455,83 +350,196 @@ function renderEvents(list = events) {
     }
 
 
-    table.innerHTML =
-        list.map(event => {
+    data.forEach(function (event) {
 
-            return `
+        const id =
+            event.id ?? "-";
 
-                <tr>
+        const name =
+            event.name ??
+            event.eventName ??
+            "-";
 
-                    <td>
-                        #${event.id ?? "-"}
-                    </td>
+        const capacity =
+            event.capacity ?? 0;
 
-                    <td>
-                        <strong>
-                            ${escapeHtml(
-                event.name ?? "-"
-            )}
-                        </strong>
-                    </td>
+        const price =
+            event.ticketPrice ??
+            event.price ??
+            0;
 
-                    <td>
-                        ${event.capacity ?? 0}
-                    </td>
+        const date =
+            event.eventDate ??
+            event.date ??
+            "-";
 
-                    <td>
-                        ₹${formatPrice(
-                event.ticketPrice ??
-                event.price ??
-                0
-            )}
-                    </td>
 
-                    <td>
-                        ${formatDate(
-                event.eventDate ??
-                event.startDateTime
-            )}
-                    </td>
+        const row =
+            document.createElement("tr");
 
-                    <td>
 
-                        <button
-                            class="btn btn-red"
-                            style="padding:8px 13px"
-                            onclick="deleteEvent(${event.id})">
-                            Delete
-                        </button>
+        row.innerHTML = `
 
-                    </td>
+            <td>
+                #${escapeHTML(id)}
+            </td>
 
-                </tr>
+            <td>
+                <strong>
+                    ${escapeHTML(name)}
+                </strong>
+            </td>
 
-            `;
+            <td>
+                ${escapeHTML(capacity)}
+            </td>
 
-        }).join("");
+            <td>
+                ₹${formatPrice(price)}
+            </td>
+
+            <td>
+                ${formatDate(date)}
+            </td>
+
+            <td>
+
+                <button
+                    class="btn btn-red"
+                    onclick="deleteEvent(${id})">
+                    Delete
+                </button>
+
+            </td>
+
+        `;
+
+
+        tbody.appendChild(row);
+
+    });
 
 }
 
 
-/* =========================================================
-   EVENT SEARCH
-   ========================================================= */
+// ======================================================
+// DASHBOARD EVENTS
+// ======================================================
+
+function renderDashboardEvents() {
+
+    const tbody =
+        document.getElementById("dashboardEvents");
+
+    if (!tbody) {
+        return;
+    }
+
+    tbody.innerHTML = "";
+
+
+    if (!events || events.length === 0) {
+
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="5"
+                    class="empty">
+                    No events found
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+
+    events.slice(0, 5)
+        .forEach(function (event) {
+
+            const id =
+                event.id ?? "-";
+
+            const name =
+                event.name ??
+                event.eventName ??
+                "-";
+
+            const capacity =
+                event.capacity ?? 0;
+
+            const price =
+                event.ticketPrice ??
+                event.price ??
+                0;
+
+            const date =
+                event.eventDate ??
+                event.date ??
+                "-";
+
+
+            const row =
+                document.createElement("tr");
+
+
+            row.innerHTML = `
+
+                <td>#${escapeHTML(id)}</td>
+
+                <td>
+                    ${escapeHTML(name)}
+                </td>
+
+                <td>
+                    ${escapeHTML(capacity)}
+                </td>
+
+                <td>
+                    ₹${formatPrice(price)}
+                </td>
+
+                <td>
+                    ${formatDate(date)}
+                </td>
+
+            `;
+
+
+            tbody.appendChild(row);
+
+        });
+
+}
+
+
+// ======================================================
+// SEARCH EVENTS
+// ======================================================
 
 function filterEvents() {
 
+    const input =
+        document.getElementById("eventSearch");
+
+    if (!input) {
+        return;
+    }
+
     const search =
-        document.getElementById("eventSearch")
-            .value
+        input.value
             .toLowerCase()
             .trim();
 
 
     const filtered =
-        events.filter(event => {
+        events.filter(function (event) {
 
             const name =
-                String(event.name ?? "")
-                    .toLowerCase();
+                String(
+                    event.name ??
+                    event.eventName ??
+                    ""
+                ).toLowerCase();
 
             return name.includes(search);
 
@@ -543,124 +551,84 @@ function filterEvents() {
 }
 
 
-/* =========================================================
-   DELETE EVENT
-   ========================================================= */
+// ======================================================
+// OPEN EVENT MODAL
+// ======================================================
 
-async function deleteEvent(id) {
-
-    if (!id) return;
-
-
-    const confirmed =
-        confirm(
-            "Are you sure you want to delete this event?"
-        );
-
-
-    if (!confirmed) return;
-
-
-    try {
-
-        await apiFetch(
-            `${API.events}/${id}`,
-            {
-                method: "DELETE"
-            }
-        );
-
-
-        showToast(
-            "Event deleted successfully"
-        );
-
-
-        await loadEvents();
-
-
-    } catch (error) {
-
-        showToast(
-            error.message,
-            "error"
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   ATTENDEE MODAL
-   ========================================================= */
-
-function openAttendeeModal() {
+function openEventModal() {
 
     document
-        .getElementById("attendeeModal")
+        .getElementById("eventModal")
         .classList.add("show");
 
 }
 
 
-function closeAttendeeModal() {
+// ======================================================
+// CLOSE EVENT MODAL
+// ======================================================
+
+function closeEventModal() {
 
     document
-        .getElementById("attendeeModal")
+        .getElementById("eventModal")
         .classList.remove("show");
 
 }
 
 
-/* =========================================================
-   CREATE ATTENDEE
-   ========================================================= */
+// ======================================================
+// SAVE EVENT
+// ======================================================
 
-async function saveAttendee(event) {
+async function saveEvent(event) {
 
     event.preventDefault();
 
 
-    const name =
-        document.getElementById("attendeeName")
-            .value.trim();
+    const eventName =
+        document
+            .getElementById("eventName")
+            .value
+            .trim();
 
-    const email =
-        document.getElementById("attendeeEmail")
-            .value.trim();
-
-    const phone =
-        document.getElementById("attendeePhone")
-            .value.trim();
-
-
-    if (!name || !email || !phone) {
-
-        showToast(
-            "All attendee fields are required",
-            "error"
+    const capacity =
+        Number(
+            document
+                .getElementById("capacity")
+                .value
         );
 
-        return;
-    }
+    const ticketPrice =
+        Number(
+            document
+                .getElementById("ticketPrice")
+                .value
+        );
+
+    const eventDate =
+        document
+            .getElementById("eventDate")
+            .value;
 
 
     const data = {
 
-        name: name,
+        name: eventName,
 
-        email: email,
+        capacity: capacity,
 
-        phone: phone
+        ticketPrice: ticketPrice,
+
+        eventDate: eventDate
 
     };
 
 
     try {
 
-        await apiFetch(
-            API.attendees,
+        await apiRequest(
+            "/events",
             {
                 method: "POST",
                 body: JSON.stringify(data)
@@ -669,25 +637,37 @@ async function saveAttendee(event) {
 
 
         showToast(
-            "Attendee added successfully!"
+            "Event created successfully!",
+            "success"
         );
 
 
-        closeAttendeeModal();
-
+        document
+            .getElementById("eventName")
+            .value = "";
 
         document
-            .querySelector("#attendeeModal form")
-            .reset();
+            .getElementById("capacity")
+            .value = "";
+
+        document
+            .getElementById("ticketPrice")
+            .value = "";
+
+        document
+            .getElementById("eventDate")
+            .value = "";
 
 
-        await loadAttendees();
+        closeEventModal();
 
+        await loadEvents();
 
     } catch (error) {
 
         showToast(
-            error.message,
+            error.message ||
+            "Unable to create event",
             "error"
         );
 
@@ -696,37 +676,43 @@ async function saveAttendee(event) {
 }
 
 
-/* =========================================================
-   LOAD ATTENDEES
-   ========================================================= */
+// ======================================================
+// DELETE EVENT
+// ======================================================
 
-async function loadAttendees() {
+async function deleteEvent(id) {
+
+    if (!confirm(
+        "Are you sure you want to delete this event?"
+    )) {
+        return;
+    }
+
 
     try {
 
-        const data =
-            await apiFetch(API.attendees);
+        await apiRequest(
+            "/events/" + id,
+            {
+                method: "DELETE"
+            }
+        );
 
 
-        attendees =
-            Array.isArray(data)
-                ? data
-                : [];
+        showToast(
+            "Event deleted successfully!",
+            "success"
+        );
 
 
-        renderAttendees();
-
-        updateDashboardStats();
-
+        await loadEvents();
 
     } catch (error) {
 
-        console.error(error);
-
-        renderTableMessage(
-            "attendeesTable",
-            4,
-            "Unable to load attendees"
+        showToast(
+            error.message ||
+            "Unable to delete event",
+            "error"
         );
 
     }
@@ -734,26 +720,79 @@ async function loadAttendees() {
 }
 
 
-/* =========================================================
-   RENDER ATTENDEES
-   ========================================================= */
+// ======================================================
+// ATTENDEES
+// ======================================================
 
-function renderAttendees(list = attendees) {
+async function loadAttendees() {
 
-    const table =
-        document.getElementById(
-            "attendeesTable"
+    const tbody =
+        document.getElementById("attendeesTable");
+
+    try {
+
+        const data =
+            await apiRequest("/attendees");
+
+        attendees =
+            Array.isArray(data)
+                ? data
+                : [];
+
+        renderAttendees(attendees);
+
+        updateDashboardStats();
+
+        return attendees;
+
+    } catch (error) {
+
+        console.error(
+            "Unable to load attendees:",
+            error
         );
 
 
-    if (!table) return;
+        if (tbody) {
+
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="5"
+                        class="empty">
+                        Unable to load attendees
+                    </td>
+                </tr>
+            `;
+
+        }
+
+        return [];
+    }
+
+}
 
 
-    if (!list.length) {
+// ======================================================
+// RENDER ATTENDEES
+// ======================================================
 
-        table.innerHTML = `
+function renderAttendees(data) {
+
+    const tbody =
+        document.getElementById("attendeesTable");
+
+    if (!tbody) {
+        return;
+    }
+
+    tbody.innerHTML = "";
+
+
+    if (!data || data.length === 0) {
+
+        tbody.innerHTML = `
             <tr>
-                <td colspan="4"
+                <td colspan="5"
                     class="empty">
                     No attendees found
                 </td>
@@ -764,75 +803,102 @@ function renderAttendees(list = attendees) {
     }
 
 
-    table.innerHTML =
-        list.map(attendee => {
+    data.forEach(function (attendee) {
 
-            return `
+        const id =
+            attendee.id ?? "-";
 
-                <tr>
+        const name =
+            attendee.name ?? "-";
 
-                    <td>
-                        #${attendee.id ?? "-"}
-                    </td>
+        const email =
+            attendee.email ?? "-";
 
-                    <td>
-                        <strong>
-                            ${escapeHtml(
-                attendee.name ?? "-"
-            )}
-                        </strong>
-                    </td>
+        const phone =
+            attendee.phone ?? "-";
 
-                    <td>
-                        ${escapeHtml(
-                attendee.email ?? "-"
-            )}
-                    </td>
 
-                    <td>
-                        ${escapeHtml(
-                attendee.phone ?? "-"
-            )}
-                    </td>
+        const row =
+            document.createElement("tr");
 
-                </tr>
 
-            `;
+        row.innerHTML = `
 
-        }).join("");
+            <td>
+                #${escapeHTML(id)}
+            </td>
+
+            <td>
+                <strong>
+                    ${escapeHTML(name)}
+                </strong>
+            </td>
+
+            <td>
+                ${escapeHTML(email)}
+            </td>
+
+            <td>
+                ${escapeHTML(phone)}
+            </td>
+
+            <td>
+
+                <button
+                    class="btn btn-red"
+                    onclick="deleteAttendee(${id})">
+                    Delete
+                </button>
+
+            </td>
+
+        `;
+
+
+        tbody.appendChild(row);
+
+    });
 
 }
 
 
-/* =========================================================
-   ATTENDEE SEARCH
-   ========================================================= */
+// ======================================================
+// SEARCH ATTENDEES
+// ======================================================
 
 function filterAttendees() {
 
+    const input =
+        document.getElementById("attendeeSearch");
+
+    if (!input) {
+        return;
+    }
+
+
     const search =
-        document.getElementById(
-            "attendeeSearch"
-        )
-            .value
+        input.value
             .toLowerCase()
             .trim();
 
 
     const filtered =
-        attendees.filter(attendee => {
+        attendees.filter(function (attendee) {
 
             const name =
-                String(attendee.name ?? "")
-                    .toLowerCase();
+                String(
+                    attendee.name ?? ""
+                ).toLowerCase();
 
             const email =
-                String(attendee.email ?? "")
-                    .toLowerCase();
+                String(
+                    attendee.email ?? ""
+                ).toLowerCase();
 
             const phone =
-                String(attendee.phone ?? "")
-                    .toLowerCase();
+                String(
+                    attendee.phone ?? ""
+                ).toLowerCase();
 
 
             return (
@@ -849,9 +915,326 @@ function filterAttendees() {
 }
 
 
-/* =========================================================
-   BOOKING MODAL
-   ========================================================= */
+// ======================================================
+// OPEN ATTENDEE MODAL
+// ======================================================
+
+function openAttendeeModal() {
+
+    document
+        .getElementById("attendeeModal")
+        .classList.add("show");
+
+}
+
+
+// ======================================================
+// CLOSE ATTENDEE MODAL
+// ======================================================
+
+function closeAttendeeModal() {
+
+    document
+        .getElementById("attendeeModal")
+        .classList.remove("show");
+
+}
+
+
+// ======================================================
+// SAVE ATTENDEE
+// ======================================================
+
+async function saveAttendee(event) {
+
+    event.preventDefault();
+
+
+    const name =
+        document
+            .getElementById("attendeeName")
+            .value
+            .trim();
+
+    const email =
+        document
+            .getElementById("attendeeEmail")
+            .value
+            .trim();
+
+    const phone =
+        document
+            .getElementById("attendeePhone")
+            .value
+            .trim();
+
+
+    const data = {
+
+        name: name,
+
+        email: email,
+
+        phone: phone
+
+    };
+
+
+    try {
+
+        await apiRequest(
+            "/attendees",
+            {
+                method: "POST",
+                body: JSON.stringify(data)
+            }
+        );
+
+
+        showToast(
+            "Attendee added successfully!",
+            "success"
+        );
+
+
+        document
+            .getElementById("attendeeName")
+            .value = "";
+
+        document
+            .getElementById("attendeeEmail")
+            .value = "";
+
+        document
+            .getElementById("attendeePhone")
+            .value = "";
+
+
+        closeAttendeeModal();
+
+        await loadAttendees();
+
+    } catch (error) {
+
+        showToast(
+            error.message ||
+            "Unable to add attendee",
+            "error"
+        );
+
+    }
+
+}
+
+
+// ======================================================
+// DELETE ATTENDEE
+// ======================================================
+
+async function deleteAttendee(id) {
+
+    if (!confirm(
+        "Are you sure you want to delete this attendee?"
+    )) {
+        return;
+    }
+
+
+    try {
+
+        await apiRequest(
+            "/attendees/" + id,
+            {
+                method: "DELETE"
+            }
+        );
+
+
+        showToast(
+            "Attendee deleted successfully!",
+            "success"
+        );
+
+
+        await loadAttendees();
+
+    } catch (error) {
+
+        showToast(
+            error.message ||
+            "Unable to delete attendee",
+            "error"
+        );
+
+    }
+
+}
+
+
+// ======================================================
+// BOOKINGS
+// ======================================================
+
+async function loadBookings() {
+
+    const tbody =
+        document.getElementById("bookingsTable");
+
+    try {
+
+        const data =
+            await apiRequest("/bookings");
+
+        bookings =
+            Array.isArray(data)
+                ? data
+                : [];
+
+        renderBookings(bookings);
+
+        updateDashboardStats();
+
+        return bookings;
+
+    } catch (error) {
+
+        console.error(
+            "Unable to load bookings:",
+            error
+        );
+
+
+        if (tbody) {
+
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6"
+                        class="empty">
+                        Unable to load bookings
+                    </td>
+                </tr>
+            `;
+
+        }
+
+        return [];
+    }
+
+}
+
+
+// ======================================================
+// RENDER BOOKINGS
+// ======================================================
+
+function renderBookings(data) {
+
+    const tbody =
+        document.getElementById("bookingsTable");
+
+    if (!tbody) {
+        return;
+    }
+
+    tbody.innerHTML = "";
+
+
+    if (!data || data.length === 0) {
+
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6"
+                    class="empty">
+                    No bookings found
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+
+    data.forEach(function (booking) {
+
+        const id =
+            booking.id ?? "-";
+
+
+        const attendee =
+            booking.attendee?.name ??
+            booking.attendeeName ??
+            "-";
+
+
+        const event =
+            booking.event?.name ??
+            booking.event?.eventName ??
+            booking.eventName ??
+            "-";
+
+
+        const ticketCount =
+            booking.numberOfTickets ??
+            booking.tickets ??
+            0;
+
+
+        const status =
+            booking.status ??
+            "Confirmed";
+
+
+        const row =
+            document.createElement("tr");
+
+
+        row.innerHTML = `
+
+            <td>
+                #${escapeHTML(id)}
+            </td>
+
+            <td>
+                ${escapeHTML(attendee)}
+            </td>
+
+            <td>
+                ${escapeHTML(event)}
+            </td>
+
+            <td>
+                ${escapeHTML(ticketCount)}
+            </td>
+
+            <td>
+                <span class="badge badge-green">
+                    ${escapeHTML(status)}
+                </span>
+            </td>
+
+            <td>
+
+                <button
+                    class="btn btn-red"
+                    onclick="deleteBooking(${id})">
+                    Delete
+                </button>
+
+            </td>
+
+        `;
+
+
+        tbody.appendChild(row);
+
+    });
+
+}
+
+
+// ======================================================
+// OPEN BOOKING MODAL
+// ======================================================
 
 function openBookingModal() {
 
@@ -862,6 +1245,10 @@ function openBookingModal() {
 }
 
 
+// ======================================================
+// CLOSE BOOKING MODAL
+// ======================================================
+
 function closeBookingModal() {
 
     document
@@ -871,9 +1258,9 @@ function closeBookingModal() {
 }
 
 
-/* =========================================================
-   CREATE BOOKING
-   ========================================================= */
+// ======================================================
+// SAVE BOOKING
+// ======================================================
 
 async function saveBooking(event) {
 
@@ -882,59 +1269,26 @@ async function saveBooking(event) {
 
     const attendeeId =
         Number(
-            document.getElementById(
-                "bookingAttendeeId"
-            ).value
+            document
+                .getElementById("bookingAttendeeId")
+                .value
         );
 
 
     const eventId =
         Number(
-            document.getElementById(
-                "bookingEventId"
-            ).value
+            document
+                .getElementById("bookingEventId")
+                .value
         );
 
 
     const numberOfTickets =
         Number(
-            document.getElementById(
-                "numberOfTickets"
-            ).value
+            document
+                .getElementById("numberOfTickets")
+                .value
         );
-
-
-    if (!attendeeId || attendeeId < 1) {
-
-        showToast(
-            "Enter valid attendee ID",
-            "error"
-        );
-
-        return;
-    }
-
-
-    if (!eventId || eventId < 1) {
-
-        showToast(
-            "Enter valid event ID",
-            "error"
-        );
-
-        return;
-    }
-
-
-    if (!numberOfTickets || numberOfTickets < 1) {
-
-        showToast(
-            "Enter valid ticket count",
-            "error"
-        );
-
-        return;
-    }
 
 
     const data = {
@@ -948,16 +1302,10 @@ async function saveBooking(event) {
     };
 
 
-    console.log(
-        "BOOKING REQUEST:",
-        data
-    );
-
-
     try {
 
-        await apiFetch(
-            API.bookings,
+        await apiRequest(
+            "/bookings",
             {
                 method: "POST",
                 body: JSON.stringify(data)
@@ -966,29 +1314,35 @@ async function saveBooking(event) {
 
 
         showToast(
-            "Booking created successfully!"
+            "Booking created successfully!",
+            "success"
         );
 
 
-        closeBookingModal();
-
+        document
+            .getElementById("bookingAttendeeId")
+            .value = "";
 
         document
-            .querySelector("#bookingModal form")
-            .reset();
+            .getElementById("bookingEventId")
+            .value = "";
 
+        document
+            .getElementById("numberOfTickets")
+            .value = "1";
+
+
+        closeBookingModal();
 
         await loadBookings();
 
         await loadTickets();
 
-        await updateDashboardStats();
-
-
     } catch (error) {
 
         showToast(
-            error.message,
+            error.message ||
+            "Unable to create booking",
             "error"
         );
 
@@ -997,37 +1351,45 @@ async function saveBooking(event) {
 }
 
 
-/* =========================================================
-   LOAD BOOKINGS
-   ========================================================= */
+// ======================================================
+// DELETE BOOKING
+// ======================================================
 
-async function loadBookings() {
+async function deleteBooking(id) {
+
+    if (!confirm(
+        "Are you sure you want to delete this booking?"
+    )) {
+        return;
+    }
+
 
     try {
 
-        const data =
-            await apiFetch(API.bookings);
+        await apiRequest(
+            "/bookings/" + id,
+            {
+                method: "DELETE"
+            }
+        );
 
 
-        bookings =
-            Array.isArray(data)
-                ? data
-                : [];
+        showToast(
+            "Booking deleted successfully!",
+            "success"
+        );
 
 
-        renderBookings();
+        await loadBookings();
 
-        updateDashboardStats();
-
+        await loadTickets();
 
     } catch (error) {
 
-        console.error(error);
-
-        renderTableMessage(
-            "bookingsTable",
-            5,
-            "Unable to load bookings"
+        showToast(
+            error.message ||
+            "Unable to delete booking",
+            "error"
         );
 
     }
@@ -1035,108 +1397,60 @@ async function loadBookings() {
 }
 
 
-/* =========================================================
-   RENDER BOOKINGS
-   ========================================================= */
+// ======================================================
+// TICKETS
+// ======================================================
 
-function renderBookings() {
+async function loadTickets() {
 
-    const table =
-        document.getElementById(
-            "bookingsTable"
+    /*
+     * IMPORTANT:
+     * HTML id = ticketsTable
+     *
+     * Old JS was using ticketsTableBody.
+     * That mismatch caused the ticket table problem.
+     */
+
+    const tbody =
+        document.getElementById("ticketsTable");
+
+
+    if (!tbody) {
+
+        console.error(
+            "ticketsTable not found"
         );
-
-
-    if (!table) return;
-
-
-    if (!bookings.length) {
-
-        table.innerHTML = `
-            <tr>
-                <td colspan="5"
-                    class="empty">
-                    No bookings found
-                </td>
-            </tr>
-        `;
 
         return;
     }
 
 
-    table.innerHTML =
-        bookings.map(booking => {
+    tbody.innerHTML = `
 
-            const attendee =
-                booking.attendee?.name ??
-                booking.attendeeName ??
-                booking.attendeeId ??
-                "-";
+        <tr>
 
+            <td colspan="7"
+                class="empty">
 
-            const event =
-                booking.event?.name ??
-                booking.eventName ??
-                booking.eventId ??
-                "-";
+                Loading tickets...
 
+            </td>
 
-            const count =
-                booking.numberOfTickets ??
-                booking.ticketCount ??
-                0;
+        </tr>
 
+    `;
 
-            return `
-
-                <tr>
-
-                    <td>
-                        #${booking.id ?? "-"}
-                    </td>
-
-                    <td>
-                        ${escapeHtml(
-                String(attendee)
-            )}
-                    </td>
-
-                    <td>
-                        ${escapeHtml(
-                String(event)
-            )}
-                    </td>
-
-                    <td>
-                        ${count}
-                    </td>
-
-                    <td>
-                        <span class="badge badge-green">
-                            Confirmed
-                        </span>
-                    </td>
-
-                </tr>
-
-            `;
-
-        }).join("");
-
-}
-
-
-/* =========================================================
-   LOAD TICKETS
-   ========================================================= */
-
-async function loadTickets() {
 
     try {
 
+        console.log(
+            "GET:",
+            API_BASE_URL + "/tickets"
+        );
+
+
         const data =
-            await apiFetch(API.tickets);
+            await apiRequest("/tickets");
 
 
         tickets =
@@ -1145,170 +1459,288 @@ async function loadTickets() {
                 : [];
 
 
-        renderTickets();
+        console.log(
+            "Tickets received:",
+            tickets
+        );
+
+
+        renderTickets(tickets);
 
         updateDashboardStats();
 
 
     } catch (error) {
 
-        console.error(error);
-
-        renderTableMessage(
-            "ticketsTable",
-            7,
-            "Unable to load tickets"
+        console.error(
+            "Unable to load tickets:",
+            error
         );
+
+
+        tbody.innerHTML = `
+
+            <tr>
+
+                <td colspan="7"
+                    class="empty">
+
+                    Unable to load tickets
+
+                    <br>
+
+                    <small>
+                        ${escapeHTML(
+            error.message ||
+            "Backend error"
+        )}
+                    </small>
+
+                </td>
+
+            </tr>
+
+        `;
 
     }
 
 }
 
 
-/* =========================================================
-   RENDER TICKETS
-   ========================================================= */
+// ======================================================
+// RENDER TICKETS
+// ======================================================
 
-function renderTickets() {
+function renderTickets(data) {
 
-    const table =
-        document.getElementById(
-            "ticketsTable"
+    const tbody =
+        document.getElementById("ticketsTable");
+
+
+    if (!tbody) {
+
+        console.error(
+            "ticketsTable not found"
         );
 
+        return;
+    }
 
-    if (!table) return;
+
+    tbody.innerHTML = "";
 
 
-    if (!tickets.length) {
+    if (!data || data.length === 0) {
 
-        table.innerHTML = `
+        tbody.innerHTML = `
+
             <tr>
+
                 <td colspan="7"
                     class="empty">
+
                     No tickets found
+
                 </td>
+
             </tr>
+
         `;
 
         return;
     }
 
 
-    table.innerHTML =
-        tickets.map(ticket => {
+    data.forEach(function (ticket) {
 
-            const checked =
-                ticket.checkedIn === true;
-
-
-            const qrCode =
-                ticket.qrCode ??
-                ticket.ticketNumber ??
-                "";
+        const id =
+            ticket.id ?? "-";
 
 
-            return `
+        const ticketNumber =
+            ticket.ticketNumber ??
+            "-";
 
-                <tr>
 
-                    <td>
-                        #${ticket.id ?? "-"}
-                    </td>
+        const ticketType =
+            ticket.ticketType ??
+            "GENERAL";
 
-                    <td>
-                        <strong>
-                            ${escapeHtml(
-                ticket.ticketNumber ??
-                "-"
-            )}
-                        </strong>
-                    </td>
 
-                    <td>
-                        ${escapeHtml(
-                ticket.ticketType ??
-                "General"
-            )}
-                    </td>
+        const price =
+            ticket.price ??
+            0;
 
-                    <td>
-                        ₹${formatPrice(
-                ticket.price ?? 0
-            )}
-                    </td>
 
-                    <td>
+        const qrCode =
+            ticket.qrCode ??
+            "";
 
-                        <button
-                            class="btn btn-purple"
-                            style="padding:8px 12px"
-                            onclick="showQRCode('${escapeJs(qrCode)}', '${escapeJs(ticket.ticketNumber ?? "")}')">
-                            QR
-                        </button>
 
-                    </td>
+        const checkedIn =
+            ticket.checkedIn === true;
 
-                    <td>
 
-                        ${
-                checked
+        let statusHTML;
 
-                    ?
 
-                    `<span class="badge badge-green">
-                                Checked In
-                            </span>`
+        if (checkedIn) {
 
-                    :
+            statusHTML = `
 
-                    `<span class="badge badge-red">
-                                Not Checked In
-                            </span>`
-            }
-
-                    </td>
-
-                    <td>
-
-                        ${
-                !checked
-
-                    ?
-
-                    `<button
-                                class="btn btn-blue"
-                                style="padding:8px 12px"
-                                onclick="checkInTicket('${escapeJs(qrCode)}')">
-                                Check In
-                            </button>`
-
-                    :
-
-                    `-`
-            }
-
-                    </td>
-
-                </tr>
+                <span class="badge badge-green">
+                    Checked In
+                </span>
 
             `;
 
-        }).join("");
+        } else {
+
+            statusHTML = `
+
+                <span class="badge badge-red">
+                    Not Checked In
+                </span>
+
+            `;
+
+        }
+
+
+        let qrButton;
+
+
+        if (qrCode) {
+
+            qrButton = `
+
+                <button
+                    class="btn btn-purple"
+                    onclick="showQR('${escapeForAttribute(qrCode)}')">
+
+                    QR
+
+                </button>
+
+            `;
+
+        } else {
+
+            qrButton = `
+
+                <span style="color:#999;">
+                    No QR
+                </span>
+
+            `;
+
+        }
+
+
+        let checkInButton;
+
+
+        if (checkedIn) {
+
+            checkInButton = `
+
+                <button
+                    class="btn btn-gray"
+                    disabled>
+
+                    Checked In
+
+                </button>
+
+            `;
+
+        } else if (qrCode) {
+
+            checkInButton = `
+
+                <button
+                    class="btn btn-blue"
+                    onclick="checkInTicket('${escapeForAttribute(qrCode)}')">
+
+                    Check In
+
+                </button>
+
+            `;
+
+        } else {
+
+            checkInButton = `
+
+                <button
+                    class="btn btn-gray"
+                    disabled>
+
+                    Check In
+
+                </button>
+
+            `;
+
+        }
+
+
+        const row =
+            document.createElement("tr");
+
+
+        row.innerHTML = `
+
+            <td>
+                #${escapeHTML(id)}
+            </td>
+
+            <td>
+                <strong>
+                    ${escapeHTML(ticketNumber)}
+                </strong>
+            </td>
+
+            <td>
+                ${escapeHTML(ticketType)}
+            </td>
+
+            <td>
+                ₹${formatPrice(price)}
+            </td>
+
+            <td>
+                ${qrButton}
+            </td>
+
+            <td>
+                ${statusHTML}
+            </td>
+
+            <td>
+                ${checkInButton}
+            </td>
+
+        `;
+
+
+        tbody.appendChild(row);
+
+    });
 
 }
 
 
-/* =========================================================
-   QR CODE
-   ========================================================= */
+// ======================================================
+// SHOW QR
+// ======================================================
 
-function showQRCode(qrCode, ticketNumber) {
+function showQR(qrCode) {
 
     if (!qrCode) {
 
         showToast(
-            "QR code is not available",
+            "QR code not available",
             "error"
         );
 
@@ -1316,50 +1748,49 @@ function showQRCode(qrCode, ticketNumber) {
     }
 
 
-    const image =
-        document.getElementById(
-            "qrImage"
-        );
+    const modal =
+        document.getElementById("qrModal");
+
+    const ticketNumber =
+        document.getElementById("qrTicketNumber");
+
+    const qrImage =
+        document.getElementById("qrImage");
 
 
-    /*
-       Uses public QR generator only for
-       displaying the ticket identifier.
+    ticketNumber.textContent =
+        qrCode;
 
-       Your actual backend can later provide
-       a generated QR image/base64.
-    */
 
-    image.src =
-        "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data="
+    qrImage.src =
+        "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data="
         + encodeURIComponent(qrCode);
 
 
-    document.getElementById(
-        "qrTicketNumber"
-    ).textContent =
-        ticketNumber || qrCode;
-
-
-    document
-        .getElementById("qrModal")
-        .classList.add("show");
+    modal.classList.add("show");
 
 }
 
+
+// ======================================================
+// CLOSE QR MODAL
+// ======================================================
 
 function closeQRModal() {
 
-    document
-        .getElementById("qrModal")
-        .classList.remove("show");
+    const modal =
+        document.getElementById("qrModal");
+
+    if (modal) {
+        modal.classList.remove("show");
+    }
 
 }
 
 
-/* =========================================================
-   QR CHECK-IN
-   ========================================================= */
+// ======================================================
+// CHECK IN TICKET
+// ======================================================
 
 async function checkInTicket(qrCode) {
 
@@ -1374,27 +1805,49 @@ async function checkInTicket(qrCode) {
     }
 
 
-    const confirmed =
+    const confirmCheckIn =
         confirm(
-            "Check-in this ticket?"
+            "Are you sure you want to check in this ticket?"
         );
 
 
-    if (!confirmed) return;
+    if (!confirmCheckIn) {
+        return;
+    }
 
 
     try {
 
-        await apiFetch(
-            `${API.tickets}/checkin/${encodeURIComponent(qrCode)}`,
-            {
-                method: "POST"
-            }
+        console.log(
+            "Checking in:",
+            qrCode
+        );
+
+
+        /*
+         * This endpoint must match your
+         * TicketController mapping.
+         */
+
+        const updatedTicket =
+            await apiRequest(
+                "/tickets/check-in/" +
+                encodeURIComponent(qrCode),
+                {
+                    method: "PUT"
+                }
+            );
+
+
+        console.log(
+            "Checked in:",
+            updatedTicket
         );
 
 
         showToast(
-            "Ticket checked in successfully!"
+            "Ticket checked in successfully!",
+            "success"
         );
 
 
@@ -1403,8 +1856,15 @@ async function checkInTicket(qrCode) {
 
     } catch (error) {
 
+        console.error(
+            "Check-in error:",
+            error
+        );
+
+
         showToast(
-            error.message,
+            error.message ||
+            "Unable to check in ticket",
             "error"
         );
 
@@ -1413,173 +1873,54 @@ async function checkInTicket(qrCode) {
 }
 
 
-/* =========================================================
-   DASHBOARD
-   ========================================================= */
+// ======================================================
+// REFRESH TICKETS
+// ======================================================
 
-async function loadDashboard() {
+function refreshTickets() {
 
-    await Promise.allSettled([
-
-        loadEvents(),
-
-        loadAttendees(),
-
-        loadBookings(),
-
-        loadTickets()
-
-    ]);
-
-
-    updateDashboardStats();
+    loadTickets();
 
 }
 
 
-/* =========================================================
-   DASHBOARD STATS
-   ========================================================= */
+// ======================================================
+// TOAST
+// ======================================================
 
-function updateDashboardStats() {
+function showToast(message, type) {
 
-    const totalEvents =
-        document.getElementById(
-            "totalEvents"
-        );
+    const toast =
+        document.getElementById("toast");
 
 
-    const totalAttendees =
-        document.getElementById(
-            "totalAttendees"
-        );
-
-
-    const totalBookings =
-        document.getElementById(
-            "totalBookings"
-        );
-
-
-    const totalTickets =
-        document.getElementById(
-            "totalTickets"
-        );
-
-
-    if (totalEvents) {
-        totalEvents.textContent =
-            events.length;
-    }
-
-
-    if (totalAttendees) {
-        totalAttendees.textContent =
-            attendees.length;
-    }
-
-
-    if (totalBookings) {
-        totalBookings.textContent =
-            bookings.length;
-    }
-
-
-    if (totalTickets) {
-        totalTickets.textContent =
-            tickets.length;
-    }
-
-
-    renderDashboardEvents();
-
-}
-
-
-/* =========================================================
-   DASHBOARD EVENTS
-   ========================================================= */
-
-function renderDashboardEvents() {
-
-    const table =
-        document.getElementById(
-            "dashboardEvents"
-        );
-
-
-    if (!table) return;
-
-
-    const recent =
-        events.slice(0, 5);
-
-
-    if (!recent.length) {
-
-        table.innerHTML = `
-            <tr>
-                <td colspan="5"
-                    class="empty">
-                    No events available
-                </td>
-            </tr>
-        `;
-
+    if (!toast) {
         return;
     }
 
 
-    table.innerHTML =
-        recent.map(event => {
+    toast.textContent =
+        message;
 
-            return `
 
-                <tr>
+    toast.className =
+        "toast show " +
+        (type || "success");
 
-                    <td>
-                        #${event.id ?? "-"}
-                    </td>
 
-                    <td>
-                        <strong>
-                            ${escapeHtml(
-                event.name ?? "-"
-            )}
-                        </strong>
-                    </td>
+    setTimeout(function () {
 
-                    <td>
-                        ${event.capacity ?? 0}
-                    </td>
+        toast.className =
+            "toast";
 
-                    <td>
-                        ₹${formatPrice(
-                event.ticketPrice ??
-                event.price ??
-                0
-            )}
-                    </td>
-
-                    <td>
-                        ${formatDate(
-                event.eventDate ??
-                event.startDateTime
-            )}
-                    </td>
-
-                </tr>
-
-            `;
-
-        }).join("");
+    }, 3000);
 
 }
 
 
-/* =========================================================
-   HELPERS
-   ========================================================= */
+// ======================================================
+// FORMAT PRICE
+// ======================================================
 
 function formatPrice(value) {
 
@@ -1587,7 +1928,7 @@ function formatPrice(value) {
         Number(value);
 
 
-    if (isNaN(number)) {
+    if (Number.isNaN(number)) {
         return "0.00";
     }
 
@@ -1597,9 +1938,13 @@ function formatPrice(value) {
 }
 
 
+// ======================================================
+// FORMAT DATE
+// ======================================================
+
 function formatDate(value) {
 
-    if (!value) {
+    if (!value || value === "-") {
         return "-";
     }
 
@@ -1610,7 +1955,9 @@ function formatDate(value) {
             new Date(value);
 
 
-        if (isNaN(date.getTime())) {
+        if (Number.isNaN(
+            date.getTime()
+        )) {
             return value;
         }
 
@@ -1618,15 +1965,12 @@ function formatDate(value) {
         return date.toLocaleString(
             "en-IN",
             {
-                day: "2-digit",
-                month: "short",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit"
+                dateStyle: "medium",
+                timeStyle: "short"
             }
         );
 
-    } catch {
+    } catch (error) {
 
         return value;
 
@@ -1635,144 +1979,103 @@ function formatDate(value) {
 }
 
 
-function escapeHtml(value) {
+// ======================================================
+// HTML ESCAPE
+// ======================================================
+
+function escapeHTML(value) {
+
+    if (
+        value === null ||
+        value === undefined
+    ) {
+        return "";
+    }
+
 
     return String(value)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+
+        .replace(
+            /</g,
+            "&lt;"
+        )
+
+        .replace(
+            />/g,
+            "&gt;"
+        )
+
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+
+        .replace(
+            /'/g,
+            "&#039;"
+        );
 
 }
 
 
-function escapeJs(value) {
+// ======================================================
+// ATTRIBUTE ESCAPE
+// ======================================================
+
+function escapeForAttribute(value) {
+
+    if (
+        value === null ||
+        value === undefined
+    ) {
+        return "";
+    }
+
 
     return String(value)
-        .replaceAll("\\", "\\\\")
-        .replaceAll("'", "\\'")
-        .replaceAll('"', '\\"');
+
+        .replace(
+            /\\/g,
+            "\\\\"
+        )
+
+        .replace(
+            /'/g,
+            "\\'"
+        )
+
+        .replace(
+            /"/g,
+            "&quot;"
+        );
 
 }
 
 
-function renderTableMessage(
-    id,
-    columns,
-    message
-) {
-
-    const table =
-        document.getElementById(id);
-
-
-    if (!table) return;
-
-
-    table.innerHTML = `
-
-        <tr>
-
-            <td colspan="${columns}"
-                class="empty">
-
-                ${escapeHtml(message)}
-
-            </td>
-
-        </tr>
-
-    `;
-
-}
-
-
-function renderEventsError(message) {
-
-    renderTableMessage(
-        "eventsTable",
-        6,
-        message
-    );
-
-}
-
-
-/* =========================================================
-   CLOSE MODALS WHEN CLICK OUTSIDE
-   ========================================================= */
+// ======================================================
+// CLOSE MODALS WHEN CLICKING OUTSIDE
+// ======================================================
 
 document.addEventListener(
     "click",
-    function(event) {
+    function (event) {
 
-        const overlays =
-            document.querySelectorAll(
-                ".modal-overlay"
+        if (
+            event.target.classList.contains(
+                "modal-overlay"
+            )
+        ) {
+
+            event.target.classList.remove(
+                "show"
             );
 
-
-        overlays.forEach(overlay => {
-
-            if (
-                event.target === overlay
-            ) {
-
-                overlay.classList.remove(
-                    "show"
-                );
-
-            }
-
-        });
-
-    }
-);
-
-
-/* =========================================================
-   ESC KEY CLOSE
-   ========================================================= */
-
-document.addEventListener(
-    "keydown",
-    function(event) {
-
-        if (event.key === "Escape") {
-
-            document
-                .querySelectorAll(
-                    ".modal-overlay"
-                )
-                .forEach(modal => {
-
-                    modal.classList.remove(
-                        "show"
-                    );
-
-                });
-
         }
-
-    }
-);
-
-
-/* =========================================================
-   INITIAL LOAD
-   ========================================================= */
-
-document.addEventListener(
-    "DOMContentLoaded",
-    function() {
-
-        console.log(
-            "FestPass frontend started"
-        );
-
-
-        loadDashboard();
 
     }
 );

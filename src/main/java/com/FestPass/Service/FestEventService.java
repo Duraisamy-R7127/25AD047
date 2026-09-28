@@ -3,6 +3,7 @@ package com.FestPass.Service;
 import com.FestPass.Dto.FestEventRequest;
 import com.FestPass.Models.FestEvent;
 import com.FestPass.Repository.FestEventRepository;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,6 +15,16 @@ public class FestEventService {
 
     public FestEventService(FestEventRepository festEventRepository) {
         this.festEventRepository = festEventRepository;
+    }
+
+    public List<FestEvent> getAllEvents() {
+        return festEventRepository.findAll();
+    }
+
+    public FestEvent getEventById(Long id) {
+        return festEventRepository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Event not found with id: " + id));
     }
 
     public FestEvent createEvent(FestEventRequest request) {
@@ -28,22 +39,9 @@ public class FestEventService {
         return festEventRepository.save(event);
     }
 
-    public List<FestEvent> getAllEvents() {
+    public FestEvent updateEvent(Long id, FestEventRequest request) {
 
-        return festEventRepository.findAll();
-    }
-
-    public FestEvent getEventById(Long id) {
-        return festEventRepository.findById(id)
-                .orElse(null);
-    }
-
-    public FestEvent updateEvent(
-            Long id,
-            FestEventRequest request) {
-
-        FestEvent event = festEventRepository.findById(id)
-                .orElse(null);
+        FestEvent event = getEventById(id);
 
         event.setName(request.getName());
         event.setCapacity(request.getCapacity());
@@ -55,8 +53,7 @@ public class FestEventService {
 
     public void deleteEvent(Long id) {
 
-        FestEvent event = festEventRepository.findById(id)
-                .orElse(null);
+        FestEvent event = getEventById(id);
 
         festEventRepository.delete(event);
     }

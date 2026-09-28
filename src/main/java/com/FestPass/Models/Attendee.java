@@ -1,10 +1,10 @@
 package com.FestPass.Models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "attendee")
@@ -14,11 +14,17 @@ public class Attendee {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String name;
 
+    @Column(nullable = false)
     private String email;
 
     private String phone;
+
+    @OneToMany(mappedBy = "attendee")
+    @JsonIgnore
+    private List<Booking> bookings = new ArrayList<>();
 
     public Attendee() {
     }
@@ -49,5 +55,13 @@ public class Attendee {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public List<Booking> getBookings() {
+        return bookings;
+    }
+
+    public void setBookings(List<Booking> bookings) {
+        this.bookings = bookings;
     }
 }

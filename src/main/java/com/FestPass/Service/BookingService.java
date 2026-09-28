@@ -4,12 +4,19 @@ import com.FestPass.Dto.BookingRequest;
 import com.FestPass.Models.Attendee;
 import com.FestPass.Models.Booking;
 import com.FestPass.Models.FestEvent;
+import com.FestPass.Models.Ticket;
 import com.FestPass.Repository.AttendeeRepository;
 import com.FestPass.Repository.BookingRepository;
 import com.FestPass.Repository.FestEventRepository;
+import com.FestPass.Repository.TicketRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class BookingService {
@@ -17,87 +24,206 @@ public class BookingService {
     private final BookingRepository bookingRepository;
     private final AttendeeRepository attendeeRepository;
     private final FestEventRepository festEventRepository;
+    private final TicketRepository ticketRepository;
 
     public BookingService(
             BookingRepository bookingRepository,
             AttendeeRepository attendeeRepository,
-            FestEventRepository festEventRepository) {
+            FestEventRepository festEventRepository,
+            TicketRepository ticketRepository) {
 
         this.bookingRepository = bookingRepository;
         this.attendeeRepository = attendeeRepository;
         this.festEventRepository = festEventRepository;
+        this.ticketRepository = ticketRepository;
     }
 
+    // =====================================================
+    // GET ALL BOOKINGS
+    // =====================================================
+
+    public List<Booking> getAllBookings() {
+        return bookingRepository.findAll();
+    }
+
+    // =====================================================
+    // GET BOOKING BY ID
+    // =====================================================
+
+    public Booking getBookingById(Long id) {
+
+        return bookingRepository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Booking not found"));
+    }
+
+    // =====================================================
+    // CREATE BOOKING
+    // =====================================================
+
+    @Transactional
     public Booking createBooking(BookingRequest request) {
 
-        Attendee attendee = attendeeRepository
-                .findById(request.getAttendeeId())
-                .orElse(null);
-
-        FestEvent event = festEventRepository
-                .findById(request.getEventId())
-                .orElse(null);
-
-        if (attendee == null || event == null) {
-            return null;
+        if (request == null) {
+            throw new RuntimeException(
+                    "Booking data is required");
         }
+
+        if (request.getAttendeeId() == null) {
+            throw new RuntimeException(
+                    "Attendee ID is required");
+        }
+
+        if (request.getEventId() == null) {
+            throw new RuntimeException(
+                    "Event ID is required");
+        }
+
+        if (request.getNumberOfTickets() == null ||
+                request.getNumberOfTickets() <= 0) {
+
+            throw new RuntimeException(
+                    "Number of tickets must be greater than 0");
+        }
+
+        // -------------------------------------------------
+        // Find Attendee
+        // -------------------------------------------------
+
+        Attendee attendee =
+                attendeeRepository.findById(
+                        request.getAttendeeId()
+                ).orElseThrow(() ->
+                        new RuntimeException(
+                                "Attendee not found"));
+
+        // -------------------------------------------------
+        // Find Event
+        // -------------------------------------------------
+
+        FestEvent event =
+                festEventRepository.findById(
+                        request.getEventId()
+                ).orElseThrow(() ->
+                        new RuntimeException(
+                                "Event not found"));
+
+        // -------------------------------------------------
+        // Check Available Capacity
+        // -------------------------------------------------
+
+        long soldTickets =
+                ticketRepository.countByBooking_Event_Id(
+                        event.getId());
+
+        long requested =
+                request.getNumberOfTickets();
+
+        if (soldTickets + requested > event.getCapacity()) {
+
+            throw new RuntimeException(
+                    "EVENT SOLD OUT: Capacity "
+                            + event.getCapacity()
+                            + " / "
+                            + soldTickets);
+        }
+
+        // -------------------------------------------------
+        // Create Booking
+        // -------------------------------------------------
 
         Booking booking = new Booking();
 
         booking.setAttendee(attendee);
         booking.setEvent(event);
         booking.setNumberOfTickets(
-                request.getNumberOfTickets()
-        );
+                request.getNumberOfTickets());
 
-        return bookingRepository.save(booking);
-    }
+        Booking savedBooking =
+                bookingRepository.save(booking);
 
-    public List<Booking> getAllBookings() {
+        // -------------------------------------------------
+        // Create Tickets
+        // -------------------------------------------------
 
-        return bookingRepository.findAll();
-    }
+        List<Ticket> tickets = new ArrayList<>();
 
-    public Booking getBookingById(Long id) {
+        for (int i = 0;
+             i < request.getNumberOfTickets();
+             i++) {
 
-        return bookingRepository.findById(id)
-                .orElse(null);
-    }
+            Ticket ticket = new Ticket();
 
-    public Booking updateBooking(
-            Long id,
-            BookingRequest request) {
+            ticket.setBooking(savedBooking);
 
-        Booking booking = bookingRepository
-                .findById(id)
-                .orElse(null);
+            ticket.setTicketType("REGULAR");
 
-        if (booking == null) {
-            return null;
+            // Double -> BigDecimal
+            ticket.setPrice(
+                    BigDecimal.valueOf(
+                            event.getTicketPrice()
+                    )
+            );
+
+            // Temporary unique ticket number
+            ticket.setTicketNumber(
+                    "TEMP-" + UUID.randomUUID());
+
+            // Unique QR code
+            ticket.setQrCode(
+                    "FESTPASS-" + UUID.randomUUID());
+
+            // Initial check-in status
+            ticket.setCheckedIn(false);
+            ticket.setCheckedInAt(null);
+
+            // Save first to generate ID
+            Ticket savedTicket =
+                    ticketRepository.save(ticket);
+
+            // -------------------------------------------------
+            // Final Ticket Number
+            // -------------------------------------------------
+
+            int year =
+                    event.getEventDate() != null
+                            ? event.getEventDate().getYear()
+                            : LocalDateTime.now().getYear();
+
+            String finalTicketNumber =
+                    String.format(
+                            "FP-%d-%06d",
+                            year,
+                            savedTicket.getId());
+
+            savedTicket.setTicketNumber(
+                    finalTicketNumber);
+
+            Ticket finalTicket =
+                    ticketRepository.save(savedTicket);
+
+            tickets.add(finalTicket);
         }
 
-        Attendee attendee = attendeeRepository
-                .findById(request.getAttendeeId())
-                .orElse(null);
+        // -------------------------------------------------
+        // Add Tickets To Booking
+        // -------------------------------------------------
 
-        FestEvent event = festEventRepository
-                .findById(request.getEventId())
-                .orElse(null);
+        savedBooking.setTickets(tickets);
 
-        if (attendee == null || event == null) {
-            return null;
-        }
-
-        booking.setAttendee(attendee);
-        booking.setEvent(event);
-        booking.setNumberOfTickets(
-                request.getNumberOfTickets()
-        );
-
-        return bookingRepository.save(booking);
+        return savedBooking;
     }
+
+    // =====================================================
+    // DELETE BOOKING
+    // =====================================================
 
     public void deleteBooking(Long id) {
+
+        if (!bookingRepository.existsById(id)) {
+            throw new RuntimeException(
+                    "Booking not found");
+        }
 
         bookingRepository.deleteById(id);
     }

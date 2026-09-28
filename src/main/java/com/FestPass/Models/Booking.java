@@ -1,12 +1,11 @@
 package com.FestPass.Models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "booking")
@@ -17,16 +16,30 @@ public class Booking {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "attendee_id")
+    @JoinColumn(name = "attendee_id", nullable = false)
     private Attendee attendee;
 
     @ManyToOne
-    @JoinColumn(name = "event_id")
+    @JoinColumn(name = "event_id", nullable = false)
     private FestEvent event;
 
+    @Column(nullable = false)
     private Integer numberOfTickets;
 
+    private LocalDateTime bookingDate;
+
+    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<Ticket> tickets = new ArrayList<>();
+
     public Booking() {
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        if (bookingDate == null) {
+            bookingDate = LocalDateTime.now();
+        }
     }
 
     public Long getId() {
@@ -55,5 +68,21 @@ public class Booking {
 
     public void setNumberOfTickets(Integer numberOfTickets) {
         this.numberOfTickets = numberOfTickets;
+    }
+
+    public LocalDateTime getBookingDate() {
+        return bookingDate;
+    }
+
+    public void setBookingDate(LocalDateTime bookingDate) {
+        this.bookingDate = bookingDate;
+    }
+
+    public List<Ticket> getTickets() {
+        return tickets;
+    }
+
+    public void setTickets(List<Ticket> tickets) {
+        this.tickets = tickets;
     }
 }

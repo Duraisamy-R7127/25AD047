@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>FestPass | College Fest Ticketing</title>
 
@@ -223,9 +222,10 @@
             margin-top: 4px;
         }
 
-        /* ================= QUICK ACTION ================= */
+        /* ================= CARDS ================= */
 
-        .section-card {
+        .section-card,
+        .table-card {
             background: white;
             border-radius: 20px;
             padding: 30px;
@@ -238,6 +238,8 @@
             margin-bottom: 20px;
         }
 
+        /* ================= BUTTONS ================= */
+
         .quick-actions {
             display: flex;
             flex-wrap: wrap;
@@ -245,10 +247,10 @@
         }
 
         .btn {
-            padding: 14px 22px;
+            padding: 12px 20px;
             border-radius: 11px;
             color: white;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: bold;
             transition: 0.2s;
         }
@@ -284,13 +286,6 @@
         }
 
         /* ================= TABLE ================= */
-
-        .table-card {
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 5px 20px rgba(30, 30, 70, 0.04);
-        }
 
         .table-header {
             display: flex;
@@ -345,7 +340,7 @@
             color: #8c92a0;
         }
 
-        /* ================= BADGE ================= */
+        /* ================= BADGES ================= */
 
         .badge {
             display: inline-block;
@@ -625,10 +620,15 @@
     <header class="topbar">
 
         <div class="page-title">
-            <h1 id="pageTitle">Dashboard</h1>
+
+            <h1 id="pageTitle">
+                Dashboard
+            </h1>
+
             <p id="pageSubtitle">
                 Manage your college fest
             </p>
+
         </div>
 
         <div class="admin">
@@ -638,6 +638,7 @@
             </div>
 
             <div>
+
                 <div class="admin-name">
                     Fest Admin
                 </div>
@@ -645,6 +646,7 @@
                 <div class="admin-role">
                     Administrator
                 </div>
+
             </div>
 
         </div>
@@ -656,11 +658,13 @@
 
         <!-- ================= DASHBOARD ================= -->
 
-        <section id="dashboardPage" class="page">
+        <section id="dashboardPage"
+                 class="page">
 
             <div class="hero">
 
                 <div>
+
                     <h2>
                         Welcome to FestPass 👋
                     </h2>
@@ -668,6 +672,7 @@
                     <p>
                         Manage events, attendees, bookings and tickets from one place.
                     </p>
+
                 </div>
 
                 <div class="hero-icon">
@@ -686,6 +691,7 @@
                     </div>
 
                     <div>
+
                         <div id="totalEvents"
                              class="stat-number">
                             0
@@ -694,6 +700,7 @@
                         <div class="stat-label">
                             Total Events
                         </div>
+
                     </div>
 
                 </div>
@@ -706,6 +713,7 @@
                     </div>
 
                     <div>
+
                         <div id="totalAttendees"
                              class="stat-number">
                             0
@@ -714,6 +722,7 @@
                         <div class="stat-label">
                             Total Attendees
                         </div>
+
                     </div>
 
                 </div>
@@ -726,6 +735,7 @@
                     </div>
 
                     <div>
+
                         <div id="totalBookings"
                              class="stat-number">
                             0
@@ -734,6 +744,7 @@
                         <div class="stat-label">
                             Total Bookings
                         </div>
+
                     </div>
 
                 </div>
@@ -746,6 +757,7 @@
                     </div>
 
                     <div>
+
                         <div id="totalTickets"
                              class="stat-number">
                             0
@@ -754,14 +766,13 @@
                         <div class="stat-label">
                             Total Tickets
                         </div>
+
                     </div>
 
                 </div>
 
             </div>
 
-
-            <!-- QUICK ACTIONS -->
 
             <div class="section-card">
 
@@ -800,11 +811,9 @@
 
                 <div class="table-header">
 
-                    <div>
-                        <h2>
-                            Recent Events
-                        </h2>
-                    </div>
+                    <h2>
+                        Recent Events
+                    </h2>
 
                     <button class="btn btn-purple"
                             onclick="showPage('events')">
@@ -818,6 +827,7 @@
                     <table>
 
                         <thead>
+
                         <tr>
                             <th>ID</th>
                             <th>Event</th>
@@ -825,6 +835,7 @@
                             <th>Price</th>
                             <th>Date</th>
                         </tr>
+
                         </thead>
 
                         <tbody id="dashboardEvents"></tbody>
@@ -849,10 +860,15 @@
                 <div class="table-header">
 
                     <div>
-                        <h2>Fest Events</h2>
+
+                        <h2>
+                            Fest Events
+                        </h2>
+
                         <p style="color:#7d8492;margin-top:5px">
                             Create and manage your college fest events
                         </p>
+
                     </div>
 
                     <div style="display:flex;gap:10px">
@@ -872,11 +888,13 @@
 
                 </div>
 
+
                 <div class="table-wrap">
 
                     <table>
 
                         <thead>
+
                         <tr>
                             <th>ID</th>
                             <th>Event</th>
@@ -885,6 +903,7 @@
                             <th>Date</th>
                             <th>Actions</th>
                         </tr>
+
                         </thead>
 
                         <tbody id="eventsTable"></tbody>
@@ -909,10 +928,15 @@
                 <div class="table-header">
 
                     <div>
-                        <h2>Attendees</h2>
+
+                        <h2>
+                            Attendees
+                        </h2>
+
                         <p style="color:#7d8492;margin-top:5px">
                             Manage fest attendees
                         </p>
+
                     </div>
 
                     <div style="display:flex;gap:10px">
@@ -932,17 +956,21 @@
 
                 </div>
 
+
                 <div class="table-wrap">
 
                     <table>
 
                         <thead>
+
                         <tr>
                             <th>ID</th>
                             <th>Name</th>
                             <th>Email</th>
                             <th>Phone</th>
+                            <th>Actions</th>
                         </tr>
+
                         </thead>
 
                         <tbody id="attendeesTable"></tbody>
@@ -967,10 +995,15 @@
                 <div class="table-header">
 
                     <div>
-                        <h2>Bookings</h2>
+
+                        <h2>
+                            Bookings
+                        </h2>
+
                         <p style="color:#7d8492;margin-top:5px">
                             Manage ticket bookings
                         </p>
+
                     </div>
 
                     <button class="btn btn-orange"
@@ -980,18 +1013,22 @@
 
                 </div>
 
+
                 <div class="table-wrap">
 
                     <table>
 
                         <thead>
+
                         <tr>
                             <th>ID</th>
                             <th>Attendee</th>
                             <th>Event</th>
                             <th>Tickets</th>
                             <th>Status</th>
+                            <th>Action</th>
                         </tr>
+
                         </thead>
 
                         <tbody id="bookingsTable"></tbody>
@@ -1016,10 +1053,15 @@
                 <div class="table-header">
 
                     <div>
-                        <h2>Tickets</h2>
+
+                        <h2>
+                            Tickets
+                        </h2>
+
                         <p style="color:#7d8492;margin-top:5px">
                             Tickets and QR check-in
                         </p>
+
                     </div>
 
                     <button class="btn btn-purple"
@@ -1029,11 +1071,13 @@
 
                 </div>
 
+
                 <div class="table-wrap">
 
                     <table>
 
                         <thead>
+
                         <tr>
                             <th>ID</th>
                             <th>Ticket Number</th>
@@ -1043,7 +1087,12 @@
                             <th>Status</th>
                             <th>Action</th>
                         </tr>
+
                         </thead>
+
+                        <!-- IMPORTANT:
+                             JS also uses ticketsTable
+                        -->
 
                         <tbody id="ticketsTable"></tbody>
 
@@ -1093,7 +1142,7 @@
                         id="eventName"
                         class="form-control"
                         type="text"
-                        placeholder="Example: Dhrona"
+                        placeholder="Example: Tech Fest 2026"
                         required>
 
             </div>
@@ -1112,7 +1161,6 @@
                             class="form-control"
                             type="number"
                             min="1"
-                            placeholder="1000"
                             required>
 
                 </div>
@@ -1130,7 +1178,6 @@
                             type="number"
                             min="0"
                             step="0.01"
-                            placeholder="999"
                             required>
 
                 </div>
@@ -1208,7 +1255,6 @@
                         id="attendeeName"
                         class="form-control"
                         type="text"
-                        placeholder="Enter attendee name"
                         required>
 
             </div>
@@ -1224,7 +1270,6 @@
                         id="attendeeEmail"
                         class="form-control"
                         type="email"
-                        placeholder="example@gmail.com"
                         required>
 
             </div>
@@ -1240,7 +1285,6 @@
                         id="attendeePhone"
                         class="form-control"
                         type="text"
-                        placeholder="9876543210"
                         required>
 
             </div>
@@ -1302,7 +1346,6 @@
                         class="form-control"
                         type="number"
                         min="1"
-                        placeholder="Example: 1"
                         required>
 
             </div>
@@ -1319,7 +1362,6 @@
                         class="form-control"
                         type="number"
                         min="1"
-                        placeholder="Example: 1"
                         required>
 
             </div>
