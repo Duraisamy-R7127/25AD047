@@ -38,17 +38,10 @@ public class BookingService {
         this.ticketRepository = ticketRepository;
     }
 
-    // =====================================================
-    // GET ALL BOOKINGS
-    // =====================================================
-
     public List<Booking> getAllBookings() {
         return bookingRepository.findAll();
     }
 
-    // =====================================================
-    // GET BOOKING BY ID
-    // =====================================================
 
     public Booking getBookingById(Long id) {
 
@@ -56,10 +49,6 @@ public class BookingService {
                 .orElseThrow(() ->
                         new RuntimeException("Booking not found"));
     }
-
-    // =====================================================
-    // CREATE BOOKING
-    // =====================================================
 
     @Transactional
     public Booking createBooking(BookingRequest request) {
@@ -86,10 +75,6 @@ public class BookingService {
                     "Number of tickets must be greater than 0");
         }
 
-        // -------------------------------------------------
-        // Find Attendee
-        // -------------------------------------------------
-
         Attendee attendee =
                 attendeeRepository.findById(
                         request.getAttendeeId()
@@ -97,20 +82,12 @@ public class BookingService {
                         new RuntimeException(
                                 "Attendee not found"));
 
-        // -------------------------------------------------
-        // Find Event
-        // -------------------------------------------------
-
         FestEvent event =
                 festEventRepository.findById(
                         request.getEventId()
                 ).orElseThrow(() ->
                         new RuntimeException(
                                 "Event not found"));
-
-        // -------------------------------------------------
-        // Check Available Capacity
-        // -------------------------------------------------
 
         long soldTickets =
                 ticketRepository.countByBooking_Event_Id(

@@ -26,17 +26,10 @@ public class TicketService {
         this.bookingRepository = bookingRepository;
     }
 
-    // =====================================================
-    // GET ALL TICKETS
-    // =====================================================
 
     public List<Ticket> getAllTickets() {
         return ticketRepository.findAll();
     }
-
-    // =====================================================
-    // GET TICKET BY ID
-    // =====================================================
 
     public Ticket getTicketById(Long id) {
 
@@ -45,20 +38,12 @@ public class TicketService {
                         new RuntimeException("Ticket not found"));
     }
 
-    // =====================================================
-    // GET TICKET BY QR CODE
-    // =====================================================
-
     public Ticket getTicketByQrCode(String qrCode) {
 
         return ticketRepository.findByQrCode(qrCode)
                 .orElseThrow(() ->
                         new RuntimeException("INVALID TICKET"));
     }
-
-    // =====================================================
-    // CREATE TICKET
-    // =====================================================
 
     public Ticket createTicket(TicketRequest request) {
 
@@ -79,11 +64,6 @@ public class TicketService {
                                 "Booking not found"));
 
         Ticket ticket = new Ticket();
-
-        // -------------------------------------------------
-        // UNIQUE TICKET NUMBER
-        // -------------------------------------------------
-
         String ticketNumber;
 
         do {
@@ -105,10 +85,6 @@ public class TicketService {
 
         ticket.setTicketNumber(ticketNumber);
 
-        // -------------------------------------------------
-        // TICKET TYPE
-        // -------------------------------------------------
-
         if (request.getTicketType() != null &&
                 !request.getTicketType().isBlank()) {
 
@@ -119,12 +95,6 @@ public class TicketService {
 
             ticket.setTicketType("GENERAL");
         }
-
-        // -------------------------------------------------
-        // PRICE
-        // Get price from Booking -> Event
-        // -------------------------------------------------
-
         Double eventPrice =
                 booking.getEvent().getTicketPrice();
 
@@ -137,10 +107,6 @@ public class TicketService {
 
             ticket.setPrice(BigDecimal.ZERO);
         }
-
-        // -------------------------------------------------
-        // UNIQUE QR CODE
-        // -------------------------------------------------
 
         String qrCode;
 
@@ -160,36 +126,18 @@ public class TicketService {
 
         ticket.setQrCode(qrCode);
 
-        // -------------------------------------------------
-        // CHECK IN
-        // -------------------------------------------------
 
         ticket.setCheckedIn(false);
         ticket.setCheckedInAt(null);
 
-        // -------------------------------------------------
-        // CHECK OUT
-        // -------------------------------------------------
-
         ticket.setCheckedOut(false);
         ticket.setCheckedOutAt(null);
 
-        // -------------------------------------------------
-        // BOOKING
-        // -------------------------------------------------
 
         ticket.setBooking(booking);
 
-        // -------------------------------------------------
-        // SAVE
-        // -------------------------------------------------
-
         return ticketRepository.save(ticket);
     }
-
-    // =====================================================
-    // CHECK IN
-    // =====================================================
 
     public Ticket checkIn(String qrCode) {
 
@@ -198,15 +146,12 @@ public class TicketService {
                 .orElseThrow(() ->
                         new RuntimeException(
                                 "INVALID TICKET"));
-
-        // Already checked in
         if (ticket.isCheckedIn()) {
 
             throw new RuntimeException(
                     "Ticket Already Checked In");
         }
 
-        // Check in
         ticket.setCheckedIn(true);
 
         ticket.setCheckedInAt(
@@ -214,10 +159,6 @@ public class TicketService {
 
         return ticketRepository.save(ticket);
     }
-
-    // =====================================================
-    // CHECK OUT
-    // =====================================================
 
     public Ticket checkOut(String qrCode) {
 
@@ -227,21 +168,16 @@ public class TicketService {
                         new RuntimeException(
                                 "INVALID TICKET"));
 
-        // Must check in first
         if (!ticket.isCheckedIn()) {
 
             throw new RuntimeException(
                     "Ticket is not checked in");
         }
-
-        // Already checked out
         if (ticket.isCheckedOut()) {
 
             throw new RuntimeException(
                     "Ticket Already Checked Out");
         }
-
-        // Check out
         ticket.setCheckedOut(true);
 
         ticket.setCheckedOutAt(
@@ -250,27 +186,15 @@ public class TicketService {
         return ticketRepository.save(ticket);
     }
 
-    // =====================================================
-    // CHECK IN - CONTROLLER METHOD
-    // =====================================================
-
     public Ticket checkInTicket(String qrCode) {
 
         return checkIn(qrCode);
     }
 
-    // =====================================================
-    // CHECK OUT - CONTROLLER METHOD
-    // =====================================================
-
     public Ticket checkOutTicket(String qrCode) {
 
         return checkOut(qrCode);
     }
-
-    // =====================================================
-    // DELETE TICKET
-    // =====================================================
 
     public void deleteTicket(Long id) {
 
